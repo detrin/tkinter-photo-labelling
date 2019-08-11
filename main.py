@@ -12,7 +12,10 @@ class Main(QMainWindow):
         
         self.files = [];
         self.LabelButtons = [];
-        self.filenames = [];
+        self.fileNames = [];
+        self.fileNamesUnusued = [];
+        self.currentFileName = "";
+        self.LabelTable = [];
 
         self.initUI()
       
@@ -40,18 +43,8 @@ class Main(QMainWindow):
         
         # Set photo in Mid Column
         self.photo.setText("")
-        myPixmap = QtGui.QPixmap('apple.jpg')
-        myPixmap.scaled(self.photo.size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
-        #self.photo.setScaledContents(True)
-        self.photo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-    
-        self.photo.setPixmap(myPixmap)
-        # self.photo.setAlignment(QtCore.Qt.AlignCenter)
-        # self.MidColumn.setAlignment( QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter );
-        # Move photo to the center
-        vector = self.MidColumn.rect().center() - QtCore.QRect(QtCore.QPoint(), self.photo.sizeHint()).center()
-        self.photo.move(vector)
-        self.photo.setObjectName("photo")
+        self.currentFileName = 'apple.jpg'
+        self.setImage()
 
         # scroll area widget contents - layout
         self.scrollLayout = QtWidgets.QFormLayout()
@@ -90,27 +83,44 @@ class Main(QMainWindow):
         
         self.scrollLayout.addRow(pushButton)
         
-
         self.LabelButtons.append(NewButtonName)
         print(self.LabelButtons)
     
     def LabelPicture(self, labelName):
-        print(labelName)
-
-    def ok_handler(self):
-        language = 'None' if not self.line.text() else self.line.text()
-        print('Favorite language: {}'.format(language))
+        self.LabelTable.append([self.currentFileName, labelName])
+        if len(self.fileNamesUnusued) > 1:
+            self.currentFileName = self.fileNamesUnusued[0]
+            self.fileNamesUnusued.pop(0)
+            self.setImage()
+        else:
+            self.currentFileName = "apple.jpg"
+            self.photo = None
+    
+    def setImage(self):
+        self.photo.clear()
+        myPixmap = QtGui.QPixmap(self.currentFileName)
+        print(self.currentFileName)
+        myPixmap.scaled(self.photo.size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+        #self.photo.setScaledContents(True)
+        self.photo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+    
+        self.photo.setPixmap(myPixmap)
+        # self.photo.setAlignment(QtCore.Qt.AlignCenter)
+        # self.MidColumn.setAlignment( QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter );
+        # Move photo to the center
+        vector = self.MidColumn.rect().center() - QtCore.QRect(QtCore.QPoint(), self.photo.sizeHint()).center()
+        self.photo.move(vector)
+        self.photo.setObjectName("photo")
 
     def files_open(self):
         names = QFileDialog.getOpenFileNames(self, 'Open File', ("Images (*.png *.jpg)"))
         print(names)
-        file = open(names[0],'r')
-
-        self.editor()
-
-        with file:
-            text = file.read()
-            self.textEdit.setText(text)
+        self.fileNames = names[0]
+        self.currentFileName = names[0][0]
+        if len(names) > 1:
+            self.fileNamesUnusued = names[0][1:]
+        print(self.fileNames)
+        print(self.currentFileName)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
