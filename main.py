@@ -1,45 +1,10 @@
 #!/usr/bin/python
 # This Python file uses the following encoding: utf-8
 import sys
-
+from functools import partial
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtWidgets import QMainWindow, QTextEdit, QAction, QFileDialog, QApplication, QSizePolicy
 from PyQt5.QtGui import QIcon
-
-class Pane(QtWidgets.QScrollArea):
-    MinWidth = 186
-
-    def __init__(self, alignment=0, parent=None):
-        super().__init__(parent)
-        self.mainWidget = QtWidgets.QWidget(self)
-        self.mainLayout = QtWidgets.QVBoxLayout(self.mainWidget)
-        self.mainLayout.setAlignment(alignment)
-        self.mainLayout.setContentsMargins(0, 0, 0, 0)
-        self.mainLayout.setSpacing(0)
-        self.setContentsMargins(0, 0, 0, 0)
-        self.setFrameStyle(QtWidgets.QFrame.NoFrame)
-        self.setFixedWidth(Pane.MinWidth)
-        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.setSizePolicy(QtWidgets.QSizePolicy.Maximum,
-                           QtWidgets.QSizePolicy.Ignored)
-        self.setWidgetResizable(True)
-        self.setWidget(self.mainWidget)
-        self.verticalScrollBar().installEventFilter(self)
-        
-    def addWidget(self, widget):
-        self.mainLayout.addWidget(widget)
-
-    def removeWidget(self, widget):
-        self.mainLayout.removeWidget(widget)
-
-    def eventFilter(self, source, event):
-        if isinstance(source, QtWidgets.QScrollBar):
-            if event.type() == QtCore.QEvent.Show:
-                self.setFixedWidth(Pane.MinWidth + source.width())
-            elif event.type() == QtCore.QEvent.Hide:
-                self.setFixedWidth(Pane.MinWidth)
-        return super(Pane, self).eventFilter(source, event)
 
 class Main(QMainWindow):
     def __init__(self, parent=None):
@@ -47,6 +12,7 @@ class Main(QMainWindow):
         
         self.files = [];
         self.LabelButtons = [];
+        self.filenames = [];
 
         self.initUI()
       
@@ -56,6 +22,9 @@ class Main(QMainWindow):
         self.RightColumn = self.findChild(QtWidgets.QFrame, 'RightColumn')
         self.LabelAddButton = self.findChild(QtWidgets.QPushButton, 'LabelAddButton')
         self.LabelAddButton.clicked.connect(self.LabelAdd) 
+        # Add label shortcut
+        QtWidgets.QShortcut(QtCore.Qt.Key_Enter, self.LabelAddButton, self.LabelAdd)
+        QtWidgets.QShortcut(QtCore.Qt.Key_Return, self.LabelAddButton, self.LabelAdd)
         self.LabelTextLine = self.findChild(QtWidgets.QLineEdit, 'LabelTextLine')
         # self.LabelsArea = self.findChild(QtWidgets.QScrollArea, 'LabelsArea')
         # self.scrollAreaWidgetContents_2 = self.findChild(QtWidgets.QWidget, 'scrollAreaWidgetContents_2')
@@ -94,6 +63,8 @@ class Main(QMainWindow):
         # scroll area
         self.scrollArea = QtWidgets.QScrollArea()
         self.scrollArea.setWidgetResizable(True)
+        # self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrollArea.setWidget(self.scrollWidget)
 
         # main layout
@@ -105,20 +76,26 @@ class Main(QMainWindow):
         self.show()
 
     def LabelAdd(self):
-        print(self.LabelTextLine.text())
         NewButtonName = self.LabelTextLine.text()
         self.LabelTextLine.setText("") 
+        
         pushButton = QtWidgets.QPushButton(NewButtonName)
+        pushButton.clicked.connect(partial(self.LabelPicture, labelName=NewButtonName))
         pushButton.setGeometry(QtCore.QRect(10, 40+len(self.LabelButtons)*30, 151, 25))
 
-        pushButton.setMinimumSize(QtCore.QSize(151, 25))
-        pushButton.setMaximumSize(QtCore.QSize(151, 25))
+        # pushButton.setMinimumSize(QtCore.QSize(151, 25))
+        # pushButton.setMaximumSize(QtCore.QSize(151, 25))
         pushButton.setObjectName("LabelButton_"+str(len(self.LabelButtons)))
-        #self.scrollAreaWidgetContents_2.layout().addWidget(pushButton)
+        pushButton.labelName = NewButtonName
+        
         self.scrollLayout.addRow(pushButton)
+        
 
         self.LabelButtons.append(NewButtonName)
         print(self.LabelButtons)
+    
+    def LabelPicture(self, labelName):
+        print(labelName)
 
     def ok_handler(self):
         language = 'None' if not self.line.text() else self.line.text()
