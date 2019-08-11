@@ -26,7 +26,7 @@ class Pane(QtWidgets.QScrollArea):
         self.setWidgetResizable(True)
         self.setWidget(self.mainWidget)
         self.verticalScrollBar().installEventFilter(self)
-
+        
     def addWidget(self, widget):
         self.mainLayout.addWidget(widget)
 
@@ -46,6 +46,7 @@ class Main(QMainWindow):
         super(Main, self).__init__(parent)
         
         self.files = [];
+        self.LabelButtons = [];
 
         self.initUI()
       
@@ -55,6 +56,9 @@ class Main(QMainWindow):
         self.RightColumn = self.findChild(QtWidgets.QFrame, 'RightColumn')
         self.LabelAddButton = self.findChild(QtWidgets.QPushButton, 'LabelAddButton')
         self.LabelAddButton.clicked.connect(self.LabelAdd) 
+        self.LabelTextLine = self.findChild(QtWidgets.QLineEdit, 'LabelTextLine')
+        # self.LabelsArea = self.findChild(QtWidgets.QScrollArea, 'LabelsArea')
+        # self.scrollAreaWidgetContents_2 = self.findChild(QtWidgets.QWidget, 'scrollAreaWidgetContents_2')
 
         # Menu setup
         self.actionOpen_files.setShortcut("Ctrl+O")
@@ -65,31 +69,63 @@ class Main(QMainWindow):
         # self.horizontalLayout_mid = QtWidgets.QHBoxLayout(self.MidColumn)
         # self.horizontalLayout_mid.addWidget(self.photo)
         
+        # Set photo in Mid Column
         self.photo.setText("")
         myPixmap = QtGui.QPixmap('apple.jpg')
         myPixmap.scaled(self.photo.size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
         #self.photo.setScaledContents(True)
-        
         self.photo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        
+    
         self.photo.setPixmap(myPixmap)
         # self.photo.setAlignment(QtCore.Qt.AlignCenter)
         # self.MidColumn.setAlignment( QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter );
+        # Move photo to the center
         vector = self.MidColumn.rect().center() - QtCore.QRect(QtCore.QPoint(), self.photo.sizeHint()).center()
         self.photo.move(vector)
         self.photo.setObjectName("photo")
 
+        # scroll area widget contents - layout
+        self.scrollLayout = QtWidgets.QFormLayout()
+
+        # scroll area widget contents
+        self.scrollWidget = QtWidgets.QWidget()
+        self.scrollWidget.setLayout(self.scrollLayout)
+
+        # scroll area
+        self.scrollArea = QtWidgets.QScrollArea()
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setWidget(self.scrollWidget)
+
+        # main layout
+        self.mainLayout = QtWidgets.QVBoxLayout()
+
+        # add all main to the main vLayout
+        self.RightColumn.layout().addWidget(self.scrollArea)
+
         self.show()
 
     def LabelAdd(self):
-        print('LabelAddButton')
+        print(self.LabelTextLine.text())
+        NewButtonName = self.LabelTextLine.text()
+        self.LabelTextLine.setText("") 
+        pushButton = QtWidgets.QPushButton(NewButtonName)
+        pushButton.setGeometry(QtCore.QRect(10, 40+len(self.LabelButtons)*30, 151, 25))
+
+        pushButton.setMinimumSize(QtCore.QSize(151, 25))
+        pushButton.setMaximumSize(QtCore.QSize(151, 25))
+        pushButton.setObjectName("LabelButton_"+str(len(self.LabelButtons)))
+        #self.scrollAreaWidgetContents_2.layout().addWidget(pushButton)
+        self.scrollLayout.addRow(pushButton)
+
+        self.LabelButtons.append(NewButtonName)
+        print(self.LabelButtons)
 
     def ok_handler(self):
         language = 'None' if not self.line.text() else self.line.text()
         print('Favorite language: {}'.format(language))
 
     def files_open(self):
-        names = QFileDialog.getOpenFileNames(self, 'Open File', ("Images (*.png *.xpm *.jpg)"))
+        names = QFileDialog.getOpenFileNames(self, 'Open File', ("Images (*.png *.jpg)"))
         print(names)
         file = open(names[0],'r')
 
