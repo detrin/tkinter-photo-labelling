@@ -1,5 +1,22 @@
 Qt photo labelling (still in progress)
 ==============
+  <a href="https://github.com/Suremotoo/e-tools">
+​    <img src="https://img.shields.io/github/license/detrin/qt-photo-labelling.svg" alt="License">
+  </a> 
+  <a href="https://github.com/Suremotoo/e-tools">
+​    <img src="https://img.shields.io/travis/detrin/qt-photo-labelling.svg" alt="build">
+  </a>
+<!-- 
+  <a href="https://github.com/Suremotoo/e-tools">
+​    <img src="https://img.shields.io/badge/platform-MacOS%7CWindows%7CLinux-orange.svg" alt="platform">
+  </a>
+  <a href="https://github.com/Suremotoo/e-tools">
+​    <img src="https://img.shields.io/github/downloads/detrin/qt-photo-labelling/total.svg" alt="total download">
+  </a>
+  <a href="https://github.com/Suremotoo/e-tools">
+​    <img src="https://img.shields.io/github/languages/code-size/detrin/qt-photo-labelling.svg" alt="code size">
+  </a>
+ -->
 This lightweight python app will help you to label images and store these labels in csv file. This can be helpful for creating image classification input.
 
 ![alt text](https://s0.gifyu.com/images/ezgif-5-8ae94797e3bc.gif)
