@@ -2,7 +2,7 @@ Qt photo labelling (still in progress)
 ==============
 This lightweight python app will help you to label images and store these labels in csv file. This can be helpful for creating image classification input.
 
-![alt text](https://s0.gifyu.com/images/iu5yx-bn0zc.gif)
+![alt text](https://s0.gifyu.com/images/ezgif-5-8ae94797e3bc.gif)
 
 ## Requisites
 - [Python 3.x](https://www.python.org "Python Homepage")
