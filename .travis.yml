@@ -1,11 +1,12 @@
 dist: bionic
 language: minimal
+sudo: true
 
 services:
 - docker
 
 install:
-- pip install --user -r requirements.txt
+- ci/docker-build
 
 script: 
 - python3 my_app.py
