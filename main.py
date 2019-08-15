@@ -2,17 +2,20 @@
 # This Python file uses the following encoding: utf-8
 # pyuic5 mainwindow_simple.ui > tmp/mainwindow_simple.py
 import sys
+import pickle
+import dill
 import sip
 from functools import partial
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
-from PyQt5.QtWidgets import QMainWindow, QTextEdit, QAction, QFileDialog, QApplication, QSizePolicy, QLabel, QListWidget, QMenu, QInputDialog, QShortcut
+from PyQt5.QtWidgets import QMainWindow, QTextEdit, QAction, QFileDialog, QApplication, QSizePolicy, QLabel, QListWidget, QMenu, QInputDialog, QShortcut, qApp
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSettings
 
 class Main(QMainWindow):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
-        
+
+        self.settings = QSettings("gui.ini", QSettings.IniFormat)
         self.files = []
         self.LabelButtons = {}
         self.LabelButtonsShortcuts = {}
@@ -40,6 +43,8 @@ class Main(QMainWindow):
         # Menu setup
         self.actionOpen_files.setShortcut("Ctrl+O")
         self.actionOpen_files.triggered.connect(self.files_open)
+        self.actionOpen_session.triggered.connect(self.openSession)
+        self.actionSave_session.triggered.connect(self.saveSession)
 
         # Frame for a picture setup
         self.photo == self.findChild(QtWidgets.QLabel, 'photo')
@@ -76,24 +81,24 @@ class Main(QMainWindow):
         NewButtonName = self.LabelTextLine.text()
         if NewButtonName.strip() != "":
             self.LabelTextLine.setText("") 
-            
+
             pushButton = QtWidgets.QPushButton(NewButtonName)
             pushButton.clicked.connect(partial(self.labelPicture, labelName=NewButtonName))
             pushButton.setGeometry(QtCore.QRect(10, 40+len(self.LabelButtons)*30, 151, 25))
 
             pushButton.setObjectName("LabelButton_"+str(len(self.LabelButtons)))
-            pushButton.labelName = NewButtonName                
+            pushButton.labelName = NewButtonName                                         
 
             pushButton.setContextMenuPolicy(Qt.CustomContextMenu)
             pushButton.customContextMenuRequested.connect(partial(self.rightClickFunction, labelName=NewButtonName))
             pushButton.action_1 = QAction()
-            pushButton.action_1.setObjectName('remove_button')        
+            pushButton.action_1.setObjectName('remove_button')                      
             pushButton.action_1.setText('Remove')
 
             pushButton.action_2 = QAction()
-            pushButton.action_2.setObjectName('add_shortcut')        
+            pushButton.action_2.setObjectName('add_shortcut')                   
             pushButton.action_2.setText('Set shortcut')  
-
+                
             pushButton.customMenu = QMenu('Menu', pushButton)       
             pushButton.customMenu.addAction(pushButton.action_1)
             pushButton.customMenu.addAction(pushButton.action_2)
@@ -102,18 +107,15 @@ class Main(QMainWindow):
             pushButton.action_2.triggered.connect(partial(self.add_shortcut, labelName=NewButtonName))
 
             self.LabelButtonsShortcutsNames[NewButtonName] = "Ctrl+"+str(len(self.LabelButtons)+1)
-
             self.scrollLayout.addRow(pushButton)
-            
             self.LabelButtons[NewButtonName] = pushButton
-            print(self.LabelButtons)
+
 
     def rightClickFunction(self, labelName) :
         pushButton = self.LabelButtons[labelName]
         pushButton.customMenu.popup(QtGui.QCursor.pos()) 
 
     def removeButton(self, labelName):
-        print("remove button")
         pushButton = self.LabelButtons[labelName]
         pushButton.setParent(None)
         #self.LabelButtons[labelName] = None
@@ -139,8 +141,6 @@ class Main(QMainWindow):
     
     def setImage(self):
         #self.photo.clear()
-        #self.photo = QLabel(self.MidColumn)
-        print(self.currentFileName)
         image = QtGui.QImage(self.currentFileName)
         ratio = 1
         w_max = self.MidColumn.frameGeometry().width()*ratio
@@ -160,11 +160,63 @@ class Main(QMainWindow):
                         Qt.SmoothTransformation))
         #self.photo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)   
 
+    def openSession(self):
+        names = QFileDialog.getOpenFileName(self, 'Open session', ("Session file (*.lbl);;All Files (*)"))
+        sessionFile = names[0]
+        with open(sessionFile, 'rb') as handle:
+            intern_vars = pickle.load(handle)
+        self.files,
+        self.LabelButtons,
+        self.LabelButtonsShortcuts,
+        self.LabelButtonsShortcutsNames,
+        self.fileNames,
+        self.filenameUnused,
+        self.currentFileName,
+        self.LabelTable = intern_vars
+        partial(self.guirestore, settings=self.settings)
+    
+    def saveSession(self):
+        names = QFileDialog.getOpenFileName(self, 'Save session', ("Session file (*.lbl);;All Files (*)"))
+        sessionFile = names[0]
+        self.guisave()
+        intern_vars = [
+            self.files,
+            self.LabelButtons,
+            self.LabelButtonsShortcuts,
+            self.LabelButtonsShortcutsNames,
+            self.fileNames,
+            self.filenameUnused,
+            self.currentFileName,
+            self.LabelTable
+        ]
+        with open(sessionFile, 'wb') as handle:
+            pickle.dump(intern_vars, handle)
+
+    def guisave(self):
+        #settings = QSettings("gui.ini", QSettings.IniFormat)
+        for w in qApp.allWidgets():
+            mo = w.metaObject()
+            if w.objectName() != "":
+                for i in range(mo.propertyCount()):
+                    name = mo.property(i).name()
+                    self.settings.setValue("{}/{}".format(w.objectName(), name), w.property(name))
+
+    def guirestore(self, settings):
+        for w in qApp.allWidgets():
+            mo = w.metaObject()
+            if w.objectName() != "":
+                for i in range(mo.propertyCount()):
+                    name = mo.property(i).name()
+                    val = self.settings.value("{}/{}".format(w.objectName(), name), w.property(name))
+                    w.setProperty(name, val)
+
+
+
     def clearImage(self):
         self.photo.clear()
 
     def files_open(self):
-        names = QFileDialog.getOpenFileNames(self, 'Open File', ("Images (*.png *.jpg)"))
+        names = QFileDialog.getOpenFileNames(self, 'Open File', ("Images (*.png *.jpg);;All Files (*)"))
         print(names)
         self.fileNames = names[0]
         self.currentFileName = names[0][0]
