@@ -5,6 +5,7 @@ services:
 - docker
 
 install:
-- ci/build-docker
+- pip install --user -r requirements.txt
 
-script: python3 my_app.py
+script: 
+- python3 my_app.py
