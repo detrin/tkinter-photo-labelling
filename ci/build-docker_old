@@ -1,5 +1,0 @@
-#!/bin/sh
-set -ev
-#cd $(dirname $0)
-pip install --upgrade pip
-pip3 install -r requirements.txt
