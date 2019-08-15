@@ -45,6 +45,8 @@ class Main(QMainWindow):
         self.actionOpen_files.triggered.connect(self.files_open)
         self.actionOpen_session.triggered.connect(self.openSession)
         self.actionSave_session.triggered.connect(self.saveSession)
+        self.actionSave_csv_file.setShortcut("Ctrl+S")
+        self.actionSave_csv_file.triggered.connect(self.saveCSVfile)
 
         # Frame for a picture setup
         self.photo == self.findChild(QtWidgets.QLabel, 'photo')
@@ -53,8 +55,8 @@ class Main(QMainWindow):
         
         # Set photo in Mid Column
         self.photo.setText("")
-        self.currentFileName = 'apple.jpg'
-        self.setImage()
+        #self.currentFileName = 'apple.jpg'
+        #self.setImage()
 
         # scroll area widget contents - layout
         self.scrollLayout = QtWidgets.QFormLayout()
@@ -176,7 +178,7 @@ class Main(QMainWindow):
         partial(self.guirestore, settings=self.settings)
     
     def saveSession(self):
-        names = QFileDialog.getOpenFileName(self, 'Save session', ("Session file (*.lbl);;All Files (*)"))
+        names = QFileDialog.getSaveFileName(self, 'Save session')
         sessionFile = names[0]
         self.guisave()
         intern_vars = [
@@ -210,21 +212,25 @@ class Main(QMainWindow):
                     val = self.settings.value("{}/{}".format(w.objectName(), name), w.property(name))
                     w.setProperty(name, val)
 
-
-
     def clearImage(self):
         self.photo.clear()
 
     def files_open(self):
-        names = QFileDialog.getOpenFileNames(self, 'Open File', ("Images (*.png *.jpg);;All Files (*)"))
-        print(names)
+        names = QFileDialog.getOpenFileNames(self, 'Open file', ("Images (*.png *.jpg);;All Files (*)"))
+
         self.fileNames = names[0]
         self.currentFileName = names[0][0]
         if len(names) > 1:
             self.filenameUnused = names[0][1:]
-        print(self.fileNames)
-        print(self.currentFileName)
+
         self.setImage()
+    
+    def saveCSVfile(self):
+        names = QFileDialog.getSaveFileName(self, 'Save CSV file')
+        with open(names[0], 'w') as f:
+            for row in self.LabelTable:
+                f.write(";".join(row)+"\n")
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
