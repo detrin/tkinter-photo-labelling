@@ -18,4 +18,4 @@ matrix:
 install: pip3 install --upgrade pip  # all three OSes agree about 'pip3'
 
 script: 
-  - python3 my_app.py
+  - python3 main.py
