@@ -17,6 +17,7 @@ Qt photo labelling (still in progress)
 ​    <img src="https://img.shields.io/github/languages/code-size/detrin/qt-photo-labelling.svg" alt="code size">
   </a>
  -->
+ 
 This lightweight python app will help you to label images and store these labels in csv file. This can be helpful for creating image classification input.
 
 ![alt text](https://s0.gifyu.com/images/ezgif-5-8ae94797e3bc.gif)
