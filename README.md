@@ -8,7 +8,7 @@ This lightweight python app will help you to label images and store these labels
 - [Python 3.x](https://www.python.org "Python Homepage")
 - [PyQt 5.x](http://www.riverbankcomputing.co.uk/software/pyqt/download5 "PyQt5 Homepage")
 
-Install requirements with
+Install python libraries with
 ```
 pip install pyqt5
 pip install sip
