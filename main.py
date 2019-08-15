@@ -5,7 +5,7 @@ import sys
 import sip
 from functools import partial
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
-from PyQt5.QtWidgets import QMainWindow, QTextEdit, QAction, QFileDialog, QApplication, QSizePolicy, QLabel, QListWidget, QMenu
+from PyQt5.QtWidgets import QMainWindow, QTextEdit, QAction, QFileDialog, QApplication, QSizePolicy, QLabel, QListWidget, QMenu, QInputDialog, QShortcut
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt
 
@@ -13,12 +13,14 @@ class Main(QMainWindow):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
         
-        self.files = [];
-        self.LabelButtons = {};
-        self.fileNames = [];
-        self.filenameUnused = [];
-        self.currentFileName = "";
-        self.LabelTable = [];
+        self.files = []
+        self.LabelButtons = {}
+        self.LabelButtonsShortcuts = {}
+        self.LabelButtonsShortcutsNames = {}
+        self.fileNames = []
+        self.filenameUnused = []
+        self.currentFileName = ""
+        self.LabelTable = []
 
         self.initUI()
       
@@ -84,36 +86,29 @@ class Main(QMainWindow):
 
             pushButton.setContextMenuPolicy(Qt.CustomContextMenu)
             pushButton.customContextMenuRequested.connect(partial(self.rightClickFunction, labelName=NewButtonName))
-            pushButton.action = QAction()
-            pushButton.action.setObjectName('action')        
-            pushButton.action.setText('Remove')
+            pushButton.action_1 = QAction()
+            pushButton.action_1.setObjectName('remove_button')        
+            pushButton.action_1.setText('Remove')
 
-            pushButton.action1 = QAction()
-            pushButton.action1.setObjectName('action1')        
-            pushButton.action1.setText('Set shortcut')  
+            pushButton.action_2 = QAction()
+            pushButton.action_2.setObjectName('add_shortcut')        
+            pushButton.action_2.setText('Set shortcut')  
 
             pushButton.customMenu = QMenu('Menu', pushButton)       
-            pushButton.customMenu.addAction(pushButton.action)
-            pushButton.customMenu.addAction(pushButton.action1)
+            pushButton.customMenu.addAction(pushButton.action_1)
+            pushButton.customMenu.addAction(pushButton.action_2)
             
-            pushButton.action.triggered.connect(partial(self.removeButton, labelName=NewButtonName))
-            pushButton.action1.triggered.connect(partial(self.removeButton, labelName=NewButtonName))
+            pushButton.action_1.triggered.connect(partial(self.removeButton, labelName=NewButtonName))
+            pushButton.action_2.triggered.connect(partial(self.add_shortcut, labelName=NewButtonName))
+
+            self.LabelButtonsShortcutsNames[NewButtonName] = "Ctrl+"+str(len(self.LabelButtons)+1)
 
             self.scrollLayout.addRow(pushButton)
             
             self.LabelButtons[NewButtonName] = pushButton
             print(self.LabelButtons)
 
-    def buttonClicked(self, QMouseEvent, labelName):
-        if QMouseEvent.button() == Qt.rightButton:
-            partial(self.removeButton, labelName=NewButtonName)
-        elif QMouseEvent.button() == Qt.leftButton:
-            pushButton = self.LabelButtons[NewButtonName]
-            pushButton.customMenu.popup(QtGui.QCursor.pos())   
-            #partial(self.labelPicture, labelName=NewButtonName)
-
     def rightClickFunction(self, labelName) :
-        print(labelName, "\n")
         pushButton = self.LabelButtons[labelName]
         pushButton.customMenu.popup(QtGui.QCursor.pos()) 
 
@@ -121,10 +116,16 @@ class Main(QMainWindow):
         print("remove button")
         pushButton = self.LabelButtons[labelName]
         pushButton.setParent(None)
-        print("a")
         #self.LabelButtons[labelName] = None
         #del self.LabelButtons[labelName]
-        
+
+    def add_shortcut(self, labelName):
+        text, result = QInputDialog.getText(self, 'Add shortcut', 'Enter new shortcut:', text=self.LabelButtonsShortcutsNames[labelName])
+        pushButton = self.LabelButtons[labelName]
+        if result:
+            self.LabelButtonsShortcuts[labelName] = QShortcut(QtGui.QKeySequence(str(text)), pushButton)
+            self.LabelButtonsShortcuts[labelName].activated.connect(partial(self.labelPicture, labelName=labelName)) 
+
     def labelPicture(self, labelName):
         self.LabelTable.append([self.currentFileName, labelName])
         if len(self.filenameUnused) > 1:
