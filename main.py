@@ -3,7 +3,6 @@
 # pyuic5 mainwindow_simple.ui > tmp/mainwindow_simple.py
 import sys
 import pickle
-import dill
 import sip
 from functools import partial
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
