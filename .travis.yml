@@ -1,0 +1,11 @@
+dist: xenial
+language: minimal
+
+services:
+- docker
+
+install:
+- ci/build-docker
+
+script:
+- docker run -v $PWD:/root/nanonote nanonote:1 /root/nanonote/ci/build-app
