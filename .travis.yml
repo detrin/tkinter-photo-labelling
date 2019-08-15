@@ -2,6 +2,9 @@ dist: bionic
 language: minimal
 sudo: true
 
+before_install:
+  - chmod +x ci/build-docker
+
 services:
 - docker
 
